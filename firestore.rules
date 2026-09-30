@@ -1,0 +1,31 @@
+// Atomic shared menu, validated in eight blocks to stay within rules limits.
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signedIn(){return request.auth != null;}
+  function foodOK(food){return food is map && food.keys().hasAll(['id','name','icon']) && food.keys().hasOnly(['id','name','icon']) && food.id is string && food.id.size() >= 1 && food.id.size() <= 64 && food.name is string && food.name.size() >= 1 && food.name.size() <= 40 && food.icon in ['🍚','🍜','🥢','🥖','🍗','🍝','🥗','🍽️'];}
+  function block(n){return getAfter(/databases/$(database)/documents/menuBlocks/$(n)).data;}
+  function menuOK(data){
+   let b0=block('0'); let b1=block('1'); let b2=block('2'); let b3=block('3');
+   let b4=block('4'); let b5=block('5'); let b6=block('6'); let b7=block('7');
+   return data.keys().hasAll(['foods','revision','updatedAt']) && data.keys().hasOnly(['foods','revision','updatedAt']) && data.foods is list && data.foods.size() >= 1 && data.foods.size() <= 40 && data.revision is int && data.revision >= 1 && data.updatedAt == request.time && b0.revision == data.revision && b1.revision == data.revision && b2.revision == data.revision && b3.revision == data.revision && b4.revision == data.revision && b5.revision == data.revision && b6.revision == data.revision && b7.revision == data.revision && data.foods == b0.foods.concat(b1.foods).concat(b2.foods).concat(b3.foods).concat(b4.foods).concat(b5.foods).concat(b6.foods).concat(b7.foods);
+  }
+  function blockOK(data){
+   let menu=getAfter(/databases/$(database)/documents/menus/lunch).data;
+   let foods=data.foods;
+   return data.keys().hasAll(['foods','revision']) && data.keys().hasOnly(['foods','revision']) && data.revision == menu.revision && menu.updatedAt == request.time && foods is list && foods.size() <= 5 && (foods.size()<1 || foodOK(foods[0])) && (foods.size()<2 || foodOK(foods[1])) && (foods.size()<3 || foodOK(foods[2])) && (foods.size()<4 || foodOK(foods[3])) && (foods.size()<5 || foodOK(foods[4]));
+  }
+  match /menus/lunch {
+   allow read: if signedIn();
+   allow create: if signedIn() && request.resource.data.revision == 1 && menuOK(request.resource.data);
+   allow update: if signedIn() && request.resource.data.revision == resource.data.revision+1 && menuOK(request.resource.data);
+   allow delete: if false;
+  }
+  match /menuBlocks/{id} {
+   allow read: if signedIn() && id in ['0','1','2','3','4','5','6','7'];
+   allow create,update: if signedIn() && id in ['0','1','2','3','4','5','6','7'] && blockOK(request.resource.data);
+   allow delete: if false;
+  }
+  match /{document=**} {allow read,write: if false;}
+ }
+}
