@@ -1,9 +1,11 @@
 # măm măm. — Trưa nay ăn gì?
 
-Web chọn món ăn trưa ngẫu nhiên, giao diện 2D màu pastel với font Plus Jakarta Sans.
+Web chọn món ăn trưa ngẫu nhiên, giao diện flat 2D tối giản với font Plus Jakarta Sans.
 
 - Dải món chạy ngang, giảm tốc và dừng tại vạch giữa.
-- Thêm món mới và lưu trên trình duyệt bằng localStorage.
+- Thêm, sửa, xoá mọi món ăn; hoàn tác lần xoá gần nhất.
+- Lưu thực đơn và chế độ sáng/tối trên trình duyệt bằng localStorage.
+- Tự nhận giao diện sáng/tối của hệ điều hành ở lần mở đầu tiên.
 - Chặn tên món trùng; các món có xác suất được chọn bằng nhau.
 - Hỗ trợ điện thoại, bàn phím và chế độ giảm chuyển động.
 
