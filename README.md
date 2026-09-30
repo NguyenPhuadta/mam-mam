@@ -1,22 +1,19 @@
 # măm măm. — Trưa nay ăn gì?
 
-Web chọn món ăn trưa ngẫu nhiên, giao diện flat 2D tối giản với font Plus Jakarta Sans.
+[Chạy web](https://nguyenphuadta.github.io/mam-mam/). Giao diện flat 2D tối giản, font Plus Jakarta Sans; vòng quay ngang, thêm/sửa/xoá món, hoàn tác và dark mode.
 
-- Dải món chạy ngang, giảm tốc và dừng tại vạch giữa.
-- Thêm, sửa, xoá mọi món ăn; hoàn tác lần xoá gần nhất.
-- Lưu thực đơn và chế độ sáng/tối trên trình duyệt bằng localStorage.
-- Tự nhận giao diện sáng/tối của hệ điều hành ở lần mở đầu tiên.
-- Chặn tên món trùng; các món có xác suất được chọn bằng nhau.
-- Hỗ trợ điện thoại, bàn phím và chế độ giảm chuyển động.
+Thực đơn dùng chung trên Firebase project `mamma-8ef91`, Cloud Firestore Standard tại Singapore. Mọi khách được đăng nhập ẩn danh tự động và đều có quyền sửa danh sách chung. Thay đổi hiển thị realtime ở các trình duyệt khác và vẫn còn sau khi tải lại trang. Theme và kết quả quay là riêng từng máy; thực đơn cũ trong localStorage không tự ghi đè thực đơn chung.
 
-## Chạy
+Mỗi lần sửa dùng transaction đọc bản mới nhất, kiểm tra tên trùng, rồi lưu nguyên tử. Giới hạn 1–40 món, tên tối đa 40 ký tự. Khi cùng sửa một món đã đổi tên, giao diện yêu cầu mở lại hộp sửa. Web chỉ xác nhận đã lưu sau khi máy chủ chấp nhận; mất mạng sẽ khoá sửa và cho kết nối lại.
 
-Mở `index.html` trực tiếp, hoặc chạy `python3 -m http.server 4173` rồi truy cập http://localhost:4173.
+## Chạy local
 
-Font được tải từ Google Fonts; nếu không có mạng, trình duyệt dùng font sans-serif dự phòng.
+`python3 -m http.server 4173 --bind 127.0.0.1`, sau đó mở `http://127.0.0.1:4173/`. Không cần build; cần internet để tải Firebase SDK và đồng bộ.
 
-## GitHub Pages
+## Backend
 
-Trong Settings → Pages, chọn Deploy from a branch, nhánh `main`, thư mục `/ (root)` rồi Save.
+Bật Anonymous Authentication. Triển khai cấu hình với Firebase CLI: `firebase deploy --only auth,firestore --project mamma-8ef91`.
 
-Không cần cài thư viện hay build. Món tự thêm chỉ lưu trên trình duyệt đang dùng, không đồng bộ lên GitHub.
+`menus/lunch` chứa danh sách, revision và server timestamp. Tám tài liệu `menuBlocks/0` đến `menuBlocks/7` chia phần kiểm tra schema thành khối tối đa 5 món để không vượt giới hạn biểu thức của rules. Cả chín tài liệu được ghi trong cùng transaction; rules yêu cầu revision và dữ liệu ghép khớp nhau. Chỉ khách đã đăng nhập được đọc/ghi đúng các đường dẫn này; xoá tài liệu và truy cập đường dẫn khác bị từ chối. Mỗi lần sửa ghi 9 tài liệu.
+
+Security rules là bản đầu cho thực đơn công khai có mọi khách là người sửa. Rules kiểm tra schema, kích thước và revision; chống trùng tên/ID được kiểm tra trong transaction ở ứng dụng. Cần kiểm tra lại rules trước khi mở rộng quyền hoặc thêm dữ liệu riêng.
